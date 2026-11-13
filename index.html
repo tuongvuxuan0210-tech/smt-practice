@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMT Practice – Luyện lập trình mount & AOI hằng ngày</title>
+<meta name="description" content="Môi trường giả lập để luyện lập trình máy gắp SMT và AOI mỗi ngày: nhật ký, ngân hàng bài tập, công cụ CAD → Mount, teaching AOI, phán định ảnh lỗi.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2312241d'/%3E%3Crect x='9' y='9' width='14' height='14' rx='2' fill='%23e7c25c'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header>
+  <h1>SMT Practice</h1>
+  <p>Luyện lập trình máy gắp (Panasonic NPM) và AOI mỗi ngày, không cần máy thật. Dữ liệu nhật ký lưu trong trình duyệt của bạn.</p>
+  <nav>
+    <button data-route="home">Hôm nay</button>
+    <button data-route="log">Nhật ký</button>
+    <button data-route="bank">Bài tập</button>
+    <button data-route="cad">CAD → Mount</button>
+    <button data-route="aoi">Teaching AOI</button>
+    <button data-route="judge">Phán định ảnh</button>
+    <button data-route="plan">Lộ trình</button>
+  </nav>
+</header>
+<main>
+<div id="storeWarn" class="banner" hidden>Trình duyệt này không cho lưu dữ liệu. Nhật ký sẽ mất khi đóng trang: hãy xuất file JSON trước khi rời đi.</div>
+
+<!-- ================= HÔM NAY ================= -->
+<section id="t-home" class="tab">
+  <div class="grid2">
+    <div class="card">
+      <div class="note" id="homeDate"></div>
+      <h3 style="margin-top:2px">Bài của hôm nay</h3>
+      <div id="homePlan"></div>
+      <div id="homeDone" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <h3>Đồng hồ buổi học</h3>
+      <div id="timer" class="timer">00:00</div>
+      <div class="row"><button id="tBtn" class="pri">Bắt đầu</button><button id="tReset" class="ghost">Đặt lại</button><button class="ghost" onclick="App.openEntry()">Ghi buổi học</button></div>
+      <p class="note">Số phút trên đồng hồ được điền sẵn khi bạn ghi buổi học hoặc lưu kết quả từ công cụ.</p>
+    </div>
+  </div>
+  <div class="kpis" id="homeKpi"></div>
+  <div class="card"><h3>28 ngày gần đây</h3><div id="homeHeat" class="heat"></div>
+    <div class="legend"><span><i class="hd l0"></i>Không luyện</span><span><i class="hd l1"></i>&lt; 20 phút</span><span><i class="hd l2"></i>20–40 phút</span><span><i class="hd l3"></i>&gt; 40 phút</span></div></div>
+  <div class="card"><h3>Buổi gần nhất</h3><div id="homeRecent" class="scroll"></div></div>
+</section>
+
+<!-- ================= NHẬT KÝ ================= -->
+<section id="t-log" class="tab">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h3 style="margin:0">Nhật ký luyện tập</h3>
+      <div class="row"><button class="pri" onclick="App.openEntry()">+ Ghi buổi học</button><button id="expCsv" class="ghost">Xuất CSV (Excel)</button><button id="expJson" class="ghost">Sao lưu JSON</button><label class="filebtn">Khôi phục JSON<input id="impJson" type="file" accept=".json,application/json" hidden></label></div>
+    </div>
+    <div id="logFilter" class="chips"></div>
+    <div class="scroll"><table id="logTbl" class="logtbl"></table></div>
+    <p class="note">Sửa trực tiếp số phút, kết quả, điểm và ghi chú trong bảng. Dữ liệu chỉ nằm trong trình duyệt này: thỉnh thoảng bấm "Sao lưu JSON" để giữ bản dự phòng, hoặc để chuyển sang máy khác.</p>
+  </div>
+  <div class="card"><h3>Thời gian theo chủ đề</h3><div id="logStats"></div></div>
+</section>
+
+<!-- ================= BÀI TẬP ================= -->
+<section id="t-bank" class="tab">
+  <div class="card">
+    <h3>Ngân hàng bài tập</h3>
+    <div id="bankFilter" class="chips"></div>
+    <div class="scroll"><table id="bankTbl"></table></div>
+  </div>
+</section>
+
+<!-- ================= TAB 1 ================= -->
+<section id="t-cad" class="tab">
+  <div class="bar">
+    <label>Mã đề <input id="cadSeed" type="number" style="width:100px"></label>
+    <label>Mức
+      <select id="cadLevel">
+        <option value="1">Dễ – Top, đổi gốc tọa độ</option>
+        <option value="2" selected>Vừa – thêm Bottom, góc tape, BOM</option>
+        <option value="3">Khó – thêm panel, góc 45°</option>
+      </select></label>
+    <label>Quy ước góc mặt Bottom
+      <select id="cadConv"><option value="A">θ' = (360 − θ) mod 360</option><option value="B">θ' = (180 − θ) mod 360</option></select></label>
+    <button id="cadNew" class="pri">Đề mới</button>
+    <button id="cadLoad" class="ghost">Làm lại mã đề này</button>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Đề bài</h3><div id="cadInfo" class="info"></div><canvas id="cadCv" width="680" height="420"></canvas>
+      <div class="note" style="margin-top:6px">Hình nhìn từ mặt Top. Linh kiện mặt Top tô đặc, mặt Bottom viền nét đứt. Chấm tròn = đầu chân 1 (hướng 0° của linh kiện).</div></div>
+    <div class="card"><h3>Quy tắc của bài</h3><ol id="cadRules"></ol>
+      <div id="tapeWrap"><h4>Góc linh kiện trong tape (giả định của bài)</h4><table id="tapeTbl"></table></div></div>
+  </div>
+  <div class="card"><h3>1. Tọa độ và góc cho chương trình máy</h3><div class="scroll"><table id="cadTbl"></table></div></div>
+  <div class="card" id="bomCard"><h3>2. Đối chiếu BOM với CAD</h3>
+    <p class="note">BOM có cài sẵn lỗi. Với mỗi Ref, chọn kết luận đúng.</p>
+    <div class="grid2"><div class="scroll"><h4>BOM khách gửi</h4><table id="bomTbl"></table></div><div class="scroll"><h4>Kết luận của bạn</h4><table id="bomAns"></table></div></div></div>
+  <div class="card" id="panelCard"><h3>3. Tọa độ trên panel</h3><div id="panelInfo" class="info"></div><div class="scroll"><table id="panelTbl"></table></div></div>
+  <div class="actions"><button id="cadCheck" class="pri">Chấm điểm</button><button id="cadShow" class="ghost">Hiện đáp án</button><button id="cadSave" class="ghost" hidden onclick="App.saveTool('cad')">Lưu vào nhật ký</button><span id="cadScore" class="score"></span></div>
+</section>
+
+<!-- ================= TAB 2 ================= -->
+<section id="t-aoi" class="tab">
+  <div class="bar">
+    <label>Mã lot <input id="aoiSeed" type="number" style="width:100px"></label>
+    <button id="aoiNew" class="pri">Lot mới</button>
+    <button id="aoiLoad" class="ghost">Làm lại mã lot này</button>
+  </div>
+  <div class="card">
+    <h3>Tình huống</h3>
+    <p style="margin:0">Line mới chạy model gồm 27 điểm/board: 20 chip 0603, 4 SOT-23, 2 SOIC-8, 1 QFP-44. Bạn có <b>20 board OK</b> (golden) để xem dữ liệu đo, rồi đặt ngưỡng cho từng loại kiểm tra. Sau đó máy chạy <b>lot 50 board</b> thật. Trong lot có lỗi thật cài sẵn, và quá trình có thể trôi so với board mẫu.</p>
+    <p style="margin:8px 0 0"><b>Mục tiêu:</b> 0 lỗi lọt, và false call ≤ 1% tổng số điểm kiểm tra.</p>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Spec khách hàng (NG khi vượt)</h3><div class="scroll"><table id="specTbl"></table></div>
+      <p class="note">Chiều cao: NG khi &lt; 50% hoặc &gt; 150% chiều cao danh định. Thiếc: NG khi &lt; 60% hoặc &gt; 150%. Cực tính: NG khi mức khớp &lt; 60%. Cầu thiếc: NG khi diện tích &gt; 300 µm². Chân nhấc: NG khi &gt; 80 µm.</p></div>
+    <div class="card"><h3>Dữ liệu 20 board OK</h3>
+      <div class="bar" style="margin-bottom:8px"><label>Linh kiện <select id="hPkg"></select></label><label>Đặc trưng <select id="hFeat"></select></label></div>
+      <canvas id="histCv" width="560" height="220"></canvas>
+      <div class="legend"><span><i style="background:#5b8f7b"></i>Phân bố board OK</span><span><i style="background:#d97706"></i>Ngưỡng của bạn</span><span><i style="background:#bb3326"></i>Spec</span></div>
+      <div id="statLine" class="note" style="margin-top:6px"></div></div>
+  </div>
+  <div class="card thr"><h3>Ngưỡng teaching</h3>
+    <div class="scroll"><table id="thrTbl"></table></div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button id="thrSpec" class="ghost">Đặt bằng spec khách hàng</button><button id="thrReset" class="ghost">Về mặc định (chưa teaching)</button><button id="aoiRun" class="pri">Chạy lot 50 board</button><button id="aoiSave" class="ghost" hidden onclick="App.saveTool('aoi')">Lưu kết quả vào nhật ký</button></div>
+  </div>
+  <div class="card" id="aoiRes" style="display:none"><h3>Kết quả lot</h3><div id="aoiResBody"></div></div>
+</section>
+
+<!-- ================= TAB 3 ================= -->
+<section id="t-jud" class="tab">
+  <div class="bar">
+    <label>Mã đề <input id="judSeed" type="number" style="width:100px"></label>
+    <button id="judNew" class="pri">12 ảnh mới</button>
+    <button id="judLoad" class="ghost">Làm lại mã đề này</button>
+  </div>
+  <div class="card"><p style="margin:0">Mỗi ảnh là một vùng kiểm tra màn hình review của AOI (ảnh 2D vẽ mô phỏng). Viền trắng là silkscreen của footprint. Hãy phán định: <b>OK</b> (false call) hay lỗi gì. Bụi trên mask, khác màu thân, lệch rất nhỏ đều <b>không</b> phải lỗi.</p></div>
+  <div id="judGrid" class="jgrid"></div>
+  <div class="actions"><button id="judCheck" class="pri">Chấm điểm</button><button id="judSave" class="ghost" hidden onclick="App.saveTool('jud')">Lưu vào nhật ký</button><span id="judScore" class="score"></span></div>
+</section>
+
+<!-- ================= LỘ TRÌNH ================= -->
+<section id="t-plan" class="tab">
+  <div class="card">
+    <h3>Vì sao cần môi trường giả lập</h3>
+    <p>Phần mềm thật (Panasonic NPM-DGS, AOI Parmi Xceed) có bản quyền và khóa cứng, không cài ở nhà được. Cách làm là tách từng kỹ năng ra, luyện bằng công cụ miễn phí và các bài tập trong app này, rồi thỉnh thoảng tìm cơ hội chạm vào máy thật.</p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Các khối của môi trường</h3>
+      <h4>A. Dữ liệu CAD/BOM</h4>
+      <p>Cài <a href="https://www.kicad.org/" target="_blank" rel="noopener">KiCad</a> (miễn phí), mở project mẫu hoặc board mã nguồn mở, xuất file Pick&Place, BOM, Gerber. Luyện chuyển sang dữ liệu PCB kiểu NPM bằng Excel và tab <a href="#cad">CAD → Mount</a>.</p>
+      <h4>B. Máy mount ảo: OpenPnP</h4>
+      <p><a href="https://openpnp.org/" target="_blank" rel="noopener">OpenPnP</a> khởi động sẵn ở chế độ mô phỏng: có camera, feeder, nozzle ảo, chạy được job có nhận fiducial bằng vision. Dùng để luyện package, feeder, job, xử lý lỗi nhận dạng.</p>
+      <h4>C. Tối ưu line</h4>
+      <p>Excel hoặc Python với dữ liệu tự tạo: chia linh kiện giữa các máy để cân bằng takt, xếp feeder theo bank/slot, làm setup dùng chung nhiều model.</p>
+      <h4>D. AOI</h4>
+      <p>Tab <a href="#aoi">Teaching AOI</a> và <a href="#judge">Phán định ảnh</a>; thêm Python + OpenCV với bộ ảnh lỗi PCB công khai (tìm "PCB defect dataset" trên GitHub/Kaggle) để tự viết bài kiểm tra: thiếu linh kiện, lệch, cầu thiếc, ngược cực.</p>
+    </div>
+    <div class="card">
+      <h3>Giữ tay nghề máy thật</h3>
+      <ul>
+        <li>Viết lại ngay, khi còn nhớ, quy trình và các màn hình NPM, Parmi từng dùng (bài REV-02, REV-03).</li>
+        <li>Hỏi đại lý / nhà phân phối Panasonic, Parmi tại Việt Nam về khóa đào tạo, phòng demo, phần mềm dùng thử.</li>
+        <li>Nhận việc hỗ trợ theo giờ, ca ngắn (lập trình, NPI) cho xưởng EMS nhỏ.</li>
+        <li>Tham gia nhóm kỹ thuật SMT Việt Nam để có dữ liệu và ca bệnh thực tế.</li>
+      </ul>
+      <h4>Lưu ý về quy ước</h4>
+      <p class="note">Quy ước gốc tọa độ, góc mặt Bottom và góc trong tape trong app là giả định của bài tập. Mỗi máy và phần mềm thật có quy ước riêng. Dữ liệu AOI là mô phỏng thống kê, không phải thuật toán của hãng.</p>
+    </div>
+  </div>
+  <div class="card"><h3>Lịch tuần</h3><div class="scroll"><table id="schedTbl"></table></div></div>
+</section>
+</main>
+
+<dialog id="entryDlg">
+  <form id="entryForm">
+    <h3>Ghi buổi học</h3>
+    <div class="fgrid">
+      <label>Ngày<input id="fDate" type="date" required></label>
+      <label>Chủ đề<select id="fTopic"></select></label>
+      <label class="wide">Bài tập<select id="fCode"></select></label>
+      <label>Số phút<input id="fMin" type="number" min="0"></label>
+      <label>Tự chấm (1–5)<select id="fScore"><option value=""></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+      <label class="wide">Kết quả<input id="fResult" type="text" placeholder="vd: 92%, Đạt, 11/12"></label>
+      <label class="wide">Ghi chú / lỗi gặp<textarea id="fNote" rows="3"></textarea></label>
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button type="button" id="fCancel" class="ghost">Hủy</button><button type="submit" class="pri">Lưu</button></div>
+  </form>
+</dialog>
+<div id="toast" class="toast"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/tools.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
