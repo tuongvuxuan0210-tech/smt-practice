@@ -34,11 +34,11 @@ python3 -m http.server 8000
 ## Cấu trúc
 
 ```
-index.html          giao diện, các tab
-assets/style.css    giao diện
-assets/data.js      chủ đề, lịch tuần, ngân hàng bài tập (sửa ở đây để thêm bài)
-assets/tools.js     3 công cụ luyện: CAD → Mount, Teaching AOI, Phán định ảnh
-assets/app.js       điều hướng, nhật ký, trang Hôm nay, đồng hồ
+index.html   giao diện, các tab
+style.css    giao diện
+data.js      chủ đề, lịch tuần, ngân hàng bài tập (sửa ở đây để thêm bài)
+tools.js     3 công cụ luyện: CAD → Mount, Teaching AOI, Phán định ảnh
+app.js       điều hướng, nhật ký, trang Hôm nay, đồng hồ
 ```
 
 ## Lưu ý
